@@ -1,8 +1,5 @@
 "use client";
-
 import { FieldCard } from "../Field/FieldCard";
-
-// Example of more dynamic mock data
 const MOCK_FIELDS = [
   {
     name: "Field A-123",

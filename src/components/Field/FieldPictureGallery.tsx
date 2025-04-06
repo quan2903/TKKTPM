@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 export const FieldPictureGallery: React.FC = () => {
   const images = [
     "https://cdn.builder.io/api/v1/image/assets/TEMP/fb3d2853a0fc16002d4ec9c0f5f4843ad61e4791?placeholderIfAbsent=true&apiKey=47da06657b0341d7b84c9cc9467a69da",

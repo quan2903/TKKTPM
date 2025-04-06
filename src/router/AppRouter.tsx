@@ -8,6 +8,7 @@ import { DashboardLayout } from "../views/DashboardLayout";
 import { FieldsSummary} from "../components/Field/FieldsSummary";
 import FieldDetails from "../views/FieldDetails";
 import {Booking} from "../views/Booking";
+
 export const AppRouter: React.FC = () => {
   return (
     <Routes>

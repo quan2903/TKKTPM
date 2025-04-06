@@ -1,6 +1,5 @@
 import Button from "../Shared_components/Button";
 import { useNavigate } from "react-router-dom";
-
 interface FieldCardProps {
   name: string;
   type: string;

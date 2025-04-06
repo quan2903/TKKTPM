@@ -5,7 +5,6 @@ import { useLocation } from "react-router-dom";
 import Button from "../Shared_components/Button";
 export const FindFieldForm: React.FC = () => {
   const location = useLocation();
-
   return (
     <section className="flex flex-col items-center px-20 py-8 w-6/12 max-md:px-5 max-md:py-6 max-md:w-full h-screen">
       <form className="bg-white dark:bg-zinc-900 shadow-2xl rounded-2xl overflow-hidden border-4 border-blue-400 dark:border-blue-800">

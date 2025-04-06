@@ -7,7 +7,6 @@ export interface FieldInfo {
     imageUrl: string;
     address: string;
   }
-  
   export interface FieldApiResponse {
     data: FieldInfo;
     success: boolean;

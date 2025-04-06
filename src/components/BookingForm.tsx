@@ -3,7 +3,6 @@ import * as React from "react";
 import { useState } from "react";
 import { InputField } from "./Shared_components/InputField";
 import Button from "./Shared_components/Button";
-
 interface TimeSlot {
   value: string;
   label: string;
