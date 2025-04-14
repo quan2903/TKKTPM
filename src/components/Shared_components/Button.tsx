@@ -1,4 +1,5 @@
 import React from "react";
+
 interface ButtonProps {
   text: string;
   type?: "primary" | "secondary" | "tertiary";

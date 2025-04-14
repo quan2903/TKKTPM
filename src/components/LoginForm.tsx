@@ -4,6 +4,7 @@ import { InputField } from "./Shared_components/InputField";
 import { AuthToggle } from "./Auth/AuthToggle";
 import { useLocation } from "react-router-dom";
 import Button from "./Shared_components/Button"; 
+
 export const LoginForm: React.FC = () => {
   const location = useLocation(); // Track pathname updates
   const activeTab = location.pathname === "/register" ? "register" : "login";
