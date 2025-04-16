@@ -26,12 +26,13 @@ export const LoginForm: React.FC = () => {
           </div>
        
 
-        <div className="mt-auto">
+        <div className="mt-auto justify-center flex flex-col items-center">
           <Button
             text={activeTab === "login" ? "Login" : "Register"}
             type="primary"
+            customStyle={{ width: "50%", height: "60px" }}
             onClick={() => {
-              // Handle login or register action here
+       
               console.log(`${activeTab} button clicked`);
             }
             }
