@@ -1,8 +1,5 @@
-"use client";
-
 import React from "react";
-import { Comment } from "../../views/Comment";
-import Button from "../Shared_components/Button";
+import { CommentInput } from "../Comments/CommentInput"; // Import CommentInput
 import { CommentHeader } from "./CommentHeader";
 
 interface CommentOverlayProps {
@@ -16,13 +13,19 @@ export const CommentOverlay: React.FC<CommentOverlayProps> = ({
   onClose,
   fieldInfo,
 }) => {
+  // Kiểm tra xem dữ liệu user có tồn tại trong localStorage không
+  const user = localStorage.getItem("user");
+  const parsedUser = user ? JSON.parse(user) : {}; // Nếu không có, trả về đối tượng rỗng
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="relative w-[60%] max-h-[90%] bg-white rounded-[20px] overflow-y-auto">
+      <div className="relative w-[60%] max-h-[90%] rounded-[20px] overflow-y-auto">
         <CommentHeader onClose={onClose} fieldInfo={fieldInfo} />
-        <Comment />
+
+        {/* Truyền fieldId và userId vào CommentInput */}
+        <CommentInput fieldId={fieldInfo.id} userId={parsedUser?.id || 0} />
       </div>
     </div>
   );

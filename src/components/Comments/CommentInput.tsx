@@ -1,53 +1,81 @@
 "use client";
 
-import * as React from "react";
-import { InputField } from "../Shared_components/InputField";
-import Button from "../Shared_components/Button";
+import React, { useState } from "react";
+import { InputField } from "../Shared_components/InputField"; 
+import Button from "../Shared_components/Button"; 
+import axiosInstance from "../../api/axiosInstance"; 
+import { useParams } from "react-router-dom"; 
 
-export const CommentInput: React.FC = () => {
-  const [comment, setComment] = React.useState("");
+interface CommentInputProps {
+  fieldId: number;
+  userId: number;
+}
+
+export const CommentInput: React.FC<CommentInputProps> = ({ fieldId, userId }) => {
+  const { fieldId: urlFieldId } = useParams(); // Lấy fieldId từ URL params nếu có
+  const [comment, setComment] = useState("");
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setComment(e.target.value);
   };
 
-  const handleSendComment = () => {
-    console.log("Comment sent:", comment);
-    setComment(""); // Reset comment field after sending
+  const handleSendComment = async () => {
+    if (!comment.trim()) {
+      alert("Bình luận không thể để trống!");
+      return;
+    }
+
+    try {
+      // Gửi API tạo bình luận
+      const response = await axiosInstance.post("/comment/create", {
+        user_id: userId,
+        field_id: fieldId || urlFieldId, // Dùng fieldId từ prop hoặc từ URL params
+        content: comment,
+        status: "active", // Hoặc có thể thay đổi nếu cần
+      });
+
+      console.log("Bình luận đã được gửi:", response.data);
+      setComment(""); // Reset trường input sau khi gửi thành công
+    } catch (error) {
+      console.error("Lỗi khi gửi bình luận:", error);
+      alert("Đã có lỗi xảy ra, vui lòng thử lại.");
+    }
   };
 
   return (
-    <section className="flex flex-wrap gap-4 self-end px-7 pt-12 pb-5 mt-10 max-w-full bg-zinc-300 rounded-[50px] text-stone-300 w-[1143px] max-md:px-5">
-      <div className="flex-1">
+    <div className="relative flex items-center justify-start px-7 pt-12 pb-5 mt-10 max-w-full bg-zinc-300 rounded-[50px] text-stone-300 w-[1143px] h-[200px] max-md:px-5">
+      <div className="absolute left-7 top-1/2 -translate-y-1/2 w-[600px] h-[130px]">
         <InputField
           label=""
           type="text"
-          placeholder="Viết bình luận của bạn ....."
+          placeholder="Viết bình luận của bạn ..."
           value={comment}
           onChange={handleCommentChange}
           style={{
-            marginBottom: 0,
-            width: "100%", // Chiều rộng đầy đủ
-            height: "70px", // Tăng chiều cao
-            fontSize: "1.2rem", // Tăng kích thước chữ
-            padding: "10px 15px", // Thêm padding để nội dung thoải mái hơn
+            width: "100%",
+            height: "100%",
+            fontSize: "1.2rem",
+            padding: "15px 20px",
+            borderRadius: "1rem",
           }}
         />
       </div>
-      <Button
-        text="Gửi"
-        type="tertiary"
-        onClick={handleSendComment}
-        customStyle={{
-          width: "85px",
-          height: "85px",
-          borderRadius: "100%",
-          padding: "0",
-          backgroundSize: "50%",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-        }}
-      />
-    </section>
+      <div className="absolute right-10 top-1/2 -translate-y-1/2">
+        <Button
+          text="Gửi"
+          type="tertiary"
+          onClick={handleSendComment}
+          customStyle={{
+            width: "90px",
+            height: "90px",
+            borderRadius: "100%",
+            padding: "0",
+            backgroundSize: "50%",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+          }}
+        />
+      </div>
+    </div>
   );
 };

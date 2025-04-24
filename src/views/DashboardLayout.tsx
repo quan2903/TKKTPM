@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import CustomerSidebar from "../components/Customer/CustomerSidebar";
-import Avatar from "../components/Profile/Avatar";
+import { AvatarMenu } from "../components/Profile/Avatar";
 import { FieldHeader } from "../components/Field/FieldHeader";
+import { FieldsSummary } from "../components/Field/FieldsSummary";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
-  children,
-}) => {
-  const [isLoading, setIsLoading] = useState(true); 
-
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
+    null
+  );
   useEffect(() => {
     setIsLoading(true);
     // Giả lập thời gian tải dữ liệu khi trang được load
@@ -80,53 +81,40 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   }
 
   return (
-    <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
-      <div className="overflow-hidden bg-neutral-100">
-        <div className="flex gap-5 max-md:flex-col">
-          <aside className="w-[16%] max-md:w-full">
-            <div className="fixed left-0 top-0 h-screen w-60 z-30 bg-white border-r border-zinc-100">
+    <div className="overflow-hidden bg-neutral-100">
+      <div className="flex gap-5 max-md:flex-col">
+      <aside className="max-md:static max-md:w-full md:w-[16%]">
+            <div className="md:fixed md:left-0 md:top-0 md:h-screen md:w-60 z-30 bg-white border-r border-zinc-100">
               <CustomerSidebar />
             </div>
-          </aside>
+          </aside>  
 
-          <main className="w-[84%] max-md:w-full">
-            {/* Fixed section containing Avatar */}
-            <div className="sticky top-0 z-50 bg-neutral-100">
-              <div className="flex items-center py-6 px-8 justify-between">
-                {/* FieldHeader - Align left */}
-                <div className="flex-none">
+        <main className="w-[84%] max-md:w-full">
+          {/* Fixed section containing Avatar */}
+          <div className="sticky top-0 z-50 bg-neutral-100">
+              <div className="flex flex-wrap items-center py-6 px-4 sm:px-8 justify-between gap-4">
+                <div className="flex-1 min-w-[0px]">
                   <FieldHeader />
                 </div>
-
-                {/* Avatar - Align right */}
-                <div className="ml-auto flex justify-end">
-                  <Avatar />
+                <div className="flex-shrink-0">
+                  <AvatarMenu />
                 </div>
               </div>
             </div>
-
-            {/* Main content */}
-            <div className="flex flex-col w-full max-md:max-w-full">
-              <div className="relative flex-1">
-                {React.cloneElement(
-                  children as React.ReactElement<{
-                    onStartLoading: () => void;
-                    onStopLoading: () => void;
-                  }>,
-                  {
-                    onStartLoading: handleStartLoading,
-                    onStopLoading: handleStopLoading,
-                  }
-                )}
-              </div>
-            </div>
-          </main>
-        </div>
+          {/* Main content */}
+          <div className="flex flex-col w-full max-md:max-w-full">
+            <div className="relative flex-1 mt-10">
+              {React.isValidElement(children)
+                  ? React.cloneElement(children, {
+              onStartLoading: handleStartLoading,
+              onStopLoading: handleStopLoading,
+              location,
+            })
+          : children}
       </div>
-    </>
+          </div>
+        </main>
+      </div>
+    </div>
   );
 };

@@ -1,14 +1,28 @@
-export interface FieldInfo {
+export interface Field {
+  
     id: string;
     name: string;
-    price: string;
-    type: string;
-    status: string;
-    imageUrl: string;
     address: string;
+    price: number;
+    category: {
+      id: string;
+      name: string;
+    };
+    state: {
+      id: string;
+      name: string;
+    };
+    images: {
+      id: string;
+      images_url: string;
+      
+
+    };
+  
   }
+  
   export interface FieldApiResponse {
-    data: FieldInfo;
+    data: Field;
     success: boolean;
     error?: string;
   }

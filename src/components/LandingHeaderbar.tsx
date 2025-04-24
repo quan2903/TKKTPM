@@ -15,7 +15,7 @@ const Headerbar: React.FC = () => {
           onClick={() => navigate("/")}
           className="w-44 left-[68px] top-[10px] absolute justify-center text-amber-500 text-2xl font-bold font-['Poppins'] leading-10 tracking-wider [text-shadow:_0px_4px_4px_rgb(0_0_0_/_0.25)] mt-[15px] cursor-pointer"
         >
-          Super bowl
+          Super mario
         </div>
 
         {/* Navigation Links */}
@@ -31,7 +31,7 @@ const Headerbar: React.FC = () => {
           <a
             href="/dashboard"
             className={`text-sm font-semibold ${
-              location.pathname === "/san" ? "text-amber-500" : "text-gray-900"
+              location.pathname === "/dashboard" ? "text-amber-500" : "text-gray-900"
             } border-l border-gray-300 pl-4`}
           >
             Sân

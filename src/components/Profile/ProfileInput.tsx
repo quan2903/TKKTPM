@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ProfileHeader } from "./ProfileHeader";
@@ -46,19 +44,19 @@ export const ProfileInput: React.FC = () => {
 
   const handleCancelClick = () => {
     setIsEditing(false);
-    setTempFormData(formData);
+    setTempFormData(formData); // Quay lại dữ liệu ban đầu
   };
 
   const handleUpdateClick = () => {
     setIsEditing(false);
-    setFormData(tempFormData);
-    console.log("Updated data:", tempFormData);
+    setFormData(tempFormData); // Cập nhật dữ liệu mới
+    console.log("Updated data:", tempFormData); // Bạn có thể gọi API để lưu thay đổi ở đây
   };
 
   return (
     <section className="rounded-2xl border border-solid border-slate-100 bg-white p-6">
       <ProfileHeader
-        name={formData.fullName}
+        name={formData.name} 
         memberSince="January 2024"
         imageUrl="profile-image.jpg"
         onImageChange={handleImageChange}
@@ -67,8 +65,8 @@ export const ProfileInput: React.FC = () => {
         <InputField
           label="Full Name"
           type="text"
-          value={tempFormData.fullName}
-          onChange={handleInputChange("fullName")}
+          value={tempFormData.name}
+          onChange={handleInputChange("name")}
           disabled={!isEditing}
         />
         <InputField
@@ -91,23 +89,20 @@ export const ProfileInput: React.FC = () => {
           <Button
             onClick={handleEditClick}
             className="bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            Sửa thông tin
-          </Button>
+            text="Sửa thông tin"
+          />
         ) : (
           <>
             <Button
               onClick={handleCancelClick}
               className="bg-gray-500 hover:bg-gray-600 text-white"
-            >
-              Hủy
-            </Button>
+              text="Hủy"
+            />
             <Button
               onClick={handleUpdateClick}
               className="bg-green-500 hover:bg-green-600 text-white"
-            >
-              Cập nhật
-            </Button>
+              text="Cập nhật"
+            />
           </>
         )}
       </div>
