@@ -81,7 +81,7 @@ export const RegisterForm: React.FC = () => {
           />
         </div>
 
-        <div className="mt-auto justify-center flex flex-col items-center">
+        <div className="mt-auto">
           <p className="mb-2 text-sm text-center">
             <span>By signing up you agree to </span>
             <a href="#" className="text-amber-500">terms and conditions</a>
@@ -90,7 +90,7 @@ export const RegisterForm: React.FC = () => {
           <Button
             text="Register"
             type="primary"
-            customStyle={{ width: "50%", height: "60px" }}
+            customStyle={{ width: "100%", height: "60px" }}
           />
         </div>
       </form>

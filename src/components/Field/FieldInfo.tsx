@@ -1,18 +1,21 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PhoneIcon from "@mui/icons-material/Phone";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import Button from "../Shared_components/Button";
 import { CommentOverlay } from "../Comments/CommentsOverLay";
 import { useField } from "../../hooks/useField";
+import { Field } from "../../types/Field"; // Cập nhật đường dẫn cho đúng
+import FieldPictureGallery from "./FieldPictureGallery"; 
 
 const FieldInfo: React.FC = () => {
   const navigate = useNavigate();
-  const [showComments, setShowComments] = React.useState(false);
+  const [showComments, setShowComments] = useState(false);
   const { selectedField, setSelectedField } = useField();
 
+  // ✅ Khôi phục selectedField từ localStorage nếu mất context
   useEffect(() => {
     if (!selectedField) {
       const storedField = localStorage.getItem("selectedField");
@@ -38,54 +41,44 @@ const FieldInfo: React.FC = () => {
   return (
     <>
       <div className={`self-stretch w-full max-md:mt-8 ${showComments ? "blur-sm" : ""}`}>
-        <div className="flex flex-col py-4 px-6 w-full bg-white rounded-[30px] shadow-[0px_0px_15px_rgba(0,0,0,0.15)]">
-          {/* Tên sân */}
-          <div className="flex gap-1 text-xl font-bold text-slate-800 mb-3">
-            {selectedField.name}
-          </div>
-
-          {/* Thông tin liên hệ */}
-          <div className="flex items-center gap-2 mb-3 text-base text-gray-600">
-            <PhoneIcon className="w-5 h-5 text-gray-600" />
-            <span>0933290303</span>
-          </div>
-
-          {/* Địa chỉ */}
-          <div className="flex items-start gap-2 mb-4 text-sm text-gray-600">
-            <LocationOnIcon className="w-5 h-5 text-yellow-500 mt-0.5" />
-            <span className="flex-1">{selectedField.address}</span>
-          </div>
-
-          {/* Hình ảnh */}
-          <div className="relative w-full  rounded-lg overflow-hidden mb-4">
-            {selectedField.images && selectedField.images.length > 0 && (
-              <img
-                src={selectedField.images[0]}
-                alt={selectedField.name}
-                className="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
-              />
-            )}
-          </div>
-
-          {/* Thông tin giá và loại sân */}
-          <div className="flex flex-col gap-2 border-t pt-3">
-            <div className="flex justify-between items-center">
-              <span className="font-medium text-gray-700">Giá sân:</span>
-              <span className="font-bold text-amber-600">
-                {selectedField.price.toLocaleString()} VND
-              </span>
+        <div className="flex flex-col py-2 px-4 w-full bg-white rounded-[30px] shadow-[0px_0px_15px_rgba(0,0,0,0.15)]">
+          <div className="flex flex-col w-full">
+            {/* Tên sân */}
+            <div className="flex gap-1 text-lg text-slate-800 font-medium">
+              {selectedField.name}
             </div>
-            <div className="flex justify-between items-center">
-              <span className="font-medium text-gray-700">Kiểu sân:</span>
-              <span className="font-bold text-slate-800">
-                {selectedField.category?.name || "Không xác định"}
-              </span>
+
+            {/* Số điện thoại */}
+            <div className="flex items-center gap-1 mt-2 text-base text-gray-600">
+              <PhoneIcon className="w-5 h-5 text-gray-600" />
+              <span>0933290303</span>
             </div>
+
+            {/* Địa chỉ */}
+            <div className="flex items-center gap-1 mt-2 text-sm text-gray-600">
+              <LocationOnIcon className="w-5 h-5 text-yellow-500" />
+              <span>{selectedField.address}</span>
+            </div>
+
+            {/* Giá sân và Kiểu sân */}
+            <div className="flex flex-col gap-1 mt-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-800">
+                  Giá sân: {selectedField.price.toLocaleString()} VND
+                </span>
+                <span className="font-bold text-slate-800">
+                  Kiểu sân: {selectedField.category?.name}
+                </span>
+              </div>
+            </div>
+
+            {/* Ảnh sân */}
+        
           </div>
         </div>
 
-        {/* Nút hành động */}
-        <div className="flex gap-4 mt-4">
+        {/* Các nút */}
+        <div className="flex gap-2 justify-between mt-2">
           <Button
             onClick={() =>
               navigate("/dashboard/booking", {
@@ -98,17 +91,18 @@ const FieldInfo: React.FC = () => {
             }
             text="Đặt sân"
             variant="tertiary"
-            className="flex-1 py-3 bg-amber-500 rounded-[34px] shadow-md text-white font-bold hover:bg-amber-600 transition-colors"
+            className="flex-1 py-2 bg-amber-500 rounded-[34px] shadow-[0px_0px_41px_rgba(0,0,0,0.25)] text-white font-bold text-sm hover:bg-amber-600 transition-colors"
           />
           <Button
             onClick={() => setShowComments(true)}
             text="Bình luận"
             variant="tertiary"
-            className="flex-1 py-3 bg-amber-500 rounded-[34px] shadow-md text-white font-bold hover:bg-amber-600 transition-colors"
+            className="flex-1 py-2 bg-amber-500 rounded-[34px] shadow-[0px_0px_41px_rgba(0,0,0,0.25)] text-white font-bold text-sm hover:bg-amber-600 transition-colors"
           />
         </div>
       </div>
 
+      {/* Overlay bình luận */}
       <CommentOverlay
         isOpen={showComments}
         onClose={() => setShowComments(false)}

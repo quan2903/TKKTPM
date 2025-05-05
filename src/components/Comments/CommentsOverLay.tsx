@@ -1,11 +1,15 @@
-import React from "react";
-import { CommentInput } from "../Comments/CommentInput"; // Import CommentInput
+import React, { useEffect, useState, useCallback } from "react";
+import { CommentInput } from "../Comments/CommentInput";
 import { CommentHeader } from "./CommentHeader";
+import { CommentItem } from "./CommentItems";
+import echo from "../../lib/echo";
+import axiosInstance from "../../api/axiosInstance";
+import { Comment } from "../../types/comment";
 
 interface CommentOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  fieldInfo: any; // Thay đổi kiểu dữ liệu phù hợp với fieldInfo
+  fieldInfo: { id: string };
 }
 
 export const CommentOverlay: React.FC<CommentOverlayProps> = ({
@@ -13,19 +17,128 @@ export const CommentOverlay: React.FC<CommentOverlayProps> = ({
   onClose,
   fieldInfo,
 }) => {
-  // Kiểm tra xem dữ liệu user có tồn tại trong localStorage không
-  const user = localStorage.getItem("user");
-  const parsedUser = user ? JSON.parse(user) : {}; // Nếu không có, trả về đối tượng rỗng
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const fetchComments = useCallback(async (page = 1) => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get(
+        `/comment/findByFieldId/${fieldInfo.id}?page=${page}`
+      );
+
+      setComments(res.data.data);
+      setPagination({
+        currentPage: res.data.meta.current_page,
+        totalPages: res.data.meta.last_page
+      });
+    } catch (err) {
+      console.error("Failed to load comments:", err);
+      setError("Failed to load comments. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [fieldInfo.id]);
+
+  const handleNewComment = useCallback((e: any) => {
+    const newComment = e.content;
+    if (!newComment || newComment.fieldId !== fieldInfo.id) return;
+
+    setComments(prev => {
+      const exists = prev.some(c => c.id === newComment.id);
+      return exists ? prev : [newComment, ...prev];
+    });
+  }, [fieldInfo.id]);
+
+  const handleUpdatedComment = useCallback((e: any) => {
+    const updatedComment = e.content;
+    if (!updatedComment || updatedComment.fieldId !== fieldInfo.id) return;
+
+    setComments(prev =>
+      prev.map(c => c.id === updatedComment.id ? { ...c, content: updatedComment.content } : c)
+    );
+  }, [fieldInfo.id]);
+
+  const handleDeletedComment = useCallback((e: any) => {
+   
+    const deletedCommentId = e.content;
+    if (!deletedCommentId) return;
+
+    setComments(prev => prev.filter(c => c.id !== deletedCommentId));
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    fetchComments(1);
+
+    const channel = echo.channel(`comments`);
+
+    channel.listen('.CommentCreated', handleNewComment);
+    channel.listen('.CommentUpdated', handleUpdatedComment);
+    channel.listen('.CommentDeleted', handleDeletedComment);
+
+    return () => {
+      channel.stopListening('.CommentCreated', handleNewComment);
+      channel.stopListening('.CommentUpdated', handleUpdatedComment);
+      channel.stopListening('.CommentDeleted', handleDeletedComment);
+      echo.leaveChannel('comments');
+    };
+  }, [isOpen, fieldInfo.id, fetchComments, handleNewComment, handleUpdatedComment, handleDeletedComment]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="relative w-[60%] max-h-[90%] rounded-[20px] overflow-y-auto">
-        <CommentHeader onClose={onClose} fieldInfo={fieldInfo} />
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-50 overflow-auto">
+      <div className="relative w-[60%] max-h-[90%] rounded-[20px] overflow-y-auto bg-opacity p-0">
+        <CommentHeader  onClose={onClose} fieldInfo={fieldInfo} />
+        
+        <div className="flex flex-col gap-4  bg-white">
+          {comments.map((comment) => (
+            <CommentItem 
+              key={`${comment.id}-${comment.created_at}`}
+              {...comment} 
+              onCommentDeleted={(id) => setComments(prev => prev.filter(c => c.id !== id))}
+            />
+          ))}
 
-        {/* Truyền fieldId và userId vào CommentInput */}
-        <CommentInput fieldId={fieldInfo.id} userId={parsedUser?.id || 0} />
+          <div className="flex justify-center gap-4 py-2 bg-white">
+            {pagination.currentPage > 1 && (
+              <button
+                onClick={() => fetchComments(pagination.currentPage - 1)}
+                className="py-2 px-4 bg-blue-500 text-white rounded"
+              >
+                Prev
+              </button>
+            )}
+
+            <span className="flex items-center gap-2 text-sm text-gray-600">
+              <span>{pagination.currentPage}</span> / <span>{pagination.totalPages}</span>
+            </span>
+
+            {pagination.currentPage < pagination.totalPages && (
+              <button
+                onClick={() => fetchComments(pagination.currentPage + 1)}
+                className="py-2 px-4 bg-blue-500 text-white rounded"
+              >
+                Next
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-center  py-2 bg-white">
+        <CommentInput 
+          fieldId={fieldInfo.id} 
+          userId={user?.id } 
+        />
+        </div>
       </div>
     </div>
   );

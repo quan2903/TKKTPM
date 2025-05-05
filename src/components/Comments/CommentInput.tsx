@@ -1,10 +1,8 @@
-"use client";
-
 import React, { useState } from "react";
-import { InputField } from "../Shared_components/InputField"; 
-import Button from "../Shared_components/Button"; 
-import axiosInstance from "../../api/axiosInstance"; 
-import { useParams } from "react-router-dom"; 
+import { InputField } from "../Shared_components/InputField";
+import Button from "../Shared_components/Button";
+import axiosInstance from "../../api/axiosInstance";
+import { useParams } from "react-router-dom";
 
 interface CommentInputProps {
   fieldId: number;
@@ -12,7 +10,7 @@ interface CommentInputProps {
 }
 
 export const CommentInput: React.FC<CommentInputProps> = ({ fieldId, userId }) => {
-  const { fieldId: urlFieldId } = useParams(); // Lấy fieldId từ URL params nếu có
+  const { fieldId: urlFieldId } = useParams(); // fallback nếu cần
   const [comment, setComment] = useState("");
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,16 +24,14 @@ export const CommentInput: React.FC<CommentInputProps> = ({ fieldId, userId }) =
     }
 
     try {
-      // Gửi API tạo bình luận
-      const response = await axiosInstance.post("/comment/create", {
+      await axiosInstance.post("/comment/create", {
         user_id: userId,
-        field_id: fieldId || urlFieldId, // Dùng fieldId từ prop hoặc từ URL params
+        field_id: fieldId || urlFieldId,
         content: comment,
-        status: "active", // Hoặc có thể thay đổi nếu cần
+        status: "active",
       });
 
-      console.log("Bình luận đã được gửi:", response.data);
-      setComment(""); // Reset trường input sau khi gửi thành công
+      setComment(""); // reset sau khi gửi thành công
     } catch (error) {
       console.error("Lỗi khi gửi bình luận:", error);
       alert("Đã có lỗi xảy ra, vui lòng thử lại.");
