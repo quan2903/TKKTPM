@@ -5,7 +5,7 @@ import { CommentItem } from "./CommentItems";
 import echo from "../../lib/echo";
 import axiosInstance from "../../api/axiosInstance";
 import { Comment } from "../../types/comment";
-
+import { useToast } from "../../hooks/use-toast";
 interface CommentOverlayProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,6 +20,7 @@ export const CommentOverlay: React.FC<CommentOverlayProps> = ({
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
