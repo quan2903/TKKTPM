@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
 let isRefreshing = false;
 let failedQueue: { resolve: Function; reject: Function }[] = [];
 
-const openRoutes = ["/", "/login", "/register","/dashboard/vnpay-return", "/dashboard", "/dashboard/fieldinfo"];
+const openRoutes = ["/", "/login", "/register", "/dashboard/vnpay-return", "/dashboard", "/dashboard/fieldinfo"];
 
 // Request Interceptor
 axiosInstance.interceptors.request.use(
@@ -65,15 +65,19 @@ axiosInstance.interceptors.response.use(
         try {
           isRefreshing = true;
 
-          const res = await axios.post("http://localhost:8000/api/auth/refresh", {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          }, {
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json",
+          const res = await axios.post(
+            "http://localhost:8000/api/auth/refresh",
+            {
+              access_token: accessToken,
+              refresh_token: refreshToken,
             },
-          });
+            {
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+              },
+            }
+          );
 
           console.log("✅ Refresh thành công:", res.data);
 
@@ -98,6 +102,7 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem("refreshToken");
 
       if (window.location.pathname !== "/login") {
+        // Nếu không ở trang login, chuyển hướng về login
         window.location.href = "/login";
       }
 
@@ -110,5 +115,29 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Hàm xử lý login Google
+export const googleLogin = async () => {
+  try {
+    const res = await axios.get("http://localhost:8000/google/login");
+
+    // Lấy token từ response
+    const { access_token, refresh_token } = res.data;
+
+    if (access_token && refresh_token) {
+      // Lưu token vào localStorage
+      localStorage.setItem("authToken", access_token);
+      localStorage.setItem("refreshToken", refresh_token);
+
+      // Chuyển hướng đến dashboard
+      window.location.href = "/dashboard";
+    } else {
+      throw new Error("Dữ liệu đăng nhập không hợp lệ");
+    }
+  } catch (error) {
+    console.error("❌ Đăng nhập Google lỗi:", error);
+    throw error;
+  }
+};
 
 export default axiosInstance;
