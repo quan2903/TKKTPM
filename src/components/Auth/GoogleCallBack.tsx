@@ -10,7 +10,7 @@ export const GoogleCallback = () => {
 
   useEffect(() => {
     const code = searchParams.get("code");
-
+    console.log("code", code);
     if (!code) {
       setError("Không tìm thấy mã xác thực (code)");
       return;
@@ -27,19 +27,17 @@ export const GoogleCallback = () => {
           setError("Không nhận được token từ Google.");
           return;
         }
-
-        // Lưu token vào localStorage
         localStorage.setItem("authToken", access_token);
-        localStorage.setItem("refresh_token", refresh_token);
+        localStorage.setItem("refreshToken", refresh_token);
 
-        // Lấy thông tin người dùng
+
         const userInfoResponse = await axiosInstance.get("/auth/profile", {
           headers: { Authorization: `Bearer ${access_token}` },
         });
 
         localStorage.setItem("user", JSON.stringify(userInfoResponse.data));
 
-        // Điều hướng tới trang dashboard
+
         navigate("/dashboard");
       } catch (err: any) {
         

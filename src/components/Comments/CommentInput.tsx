@@ -69,11 +69,9 @@ export const CommentInput: React.FC<CommentInputProps> = ({ fieldId, userId }) =
         },
       });
 
-      console.log("Response:", response);
-
-      // setComment(""); // Xóa bình luận sau khi gửi
-      // setImages([]); // Xóa ảnh đã chọn
-      // setPreviews([]); // Xóa các preview ảnh
+      setComment("");
+      setImages([]);
+      setPreviews([]);
 
       toast.toast({
         variant: "success",

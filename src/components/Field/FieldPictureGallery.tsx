@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 
-  interface FieldPictureGalleryProps {
-    images: string[]; // Danh sách ảnh được truyền vào
-  }
+interface FieldPictureGalleryProps {
+  images: { id: string; image_url: string }[]; // Danh sách ảnh được truyền vào
+
+}
 
 const FieldPictureGallery: React.FC<FieldPictureGalleryProps> = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,10 +52,10 @@ const FieldPictureGallery: React.FC<FieldPictureGalleryProps> = ({ images }) => 
             data-carousel-item
           >
             <img
-              src={image}
-              className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-              alt={`Slide ${index + 1}`}
-            />
+                src={image.image_url}
+                className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+                alt={`Slide ${index + 1}`}
+              />
           </div>
         ))}
       </div>

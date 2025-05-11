@@ -32,7 +32,14 @@ export const CommentOverlay: React.FC<CommentOverlayProps> = ({
     try {
       setLoading(true);
       const res = await axiosInstance.get(
-        `/comment/findByFieldId/${fieldInfo.id}?page=${page}`
+        `/comment/findByFieldId/${fieldInfo.id}?page=${page}`,
+        {
+          params: {
+            // Truyền số trang
+            page,
+            per_page: 5  // Truyền số bình luận mỗi trang, bạn có thể thay đổi giá trị này nếu muốn
+          }
+        }
       );
 
       setComments(res.data.data);
@@ -48,24 +55,29 @@ export const CommentOverlay: React.FC<CommentOverlayProps> = ({
     }
   }, [fieldInfo.id]);
 
-  const handleNewComment = useCallback((e: any) => {
-    const newComment = e.content;
-    if (!newComment || newComment.fieldId !== fieldInfo.id) return;
+    const handleNewComment = useCallback((e: any) => {
+      const newComment = e.content;
+      if (!newComment || newComment.fieldId !== fieldInfo.id) return;
 
-    setComments(prev => {
-      const exists = prev.some(c => c.id === newComment.id);
-      return exists ? prev : [newComment, ...prev];
-    });
-  }, [fieldInfo.id]);
+      setComments(prev => {
+        const exists = prev.some(c => c.id === newComment.id);
+        return exists ? prev : [newComment, ...prev];
+      });
+    }, [fieldInfo.id]);
 
-  const handleUpdatedComment = useCallback((e: any) => {
-    const updatedComment = e.content;
-    if (!updatedComment || updatedComment.fieldId !== fieldInfo.id) return;
-
-    setComments(prev =>
-      prev.map(c => c.id === updatedComment.id ? { ...c, content: updatedComment.content } : c)
-    );
-  }, [fieldInfo.id]);
+    const handleUpdatedComment = useCallback((e: any) => {
+      const updatedComment = e.content;
+   
+      if (!updatedComment || updatedComment.fieldId !== fieldInfo.id) return;
+      // Cập nhật bình luận trong danh sách
+      setComments(prev =>
+        prev.map(c => 
+          c.id === updatedComment.id 
+            ? { ...c, content: updatedComment.content, image_url: updatedComment.image_url } // Cập nhật ảnh
+            : c
+        )
+      );
+    }, [fieldInfo.id]);
 
   const handleDeletedComment = useCallback((e: any) => {
    
@@ -103,9 +115,15 @@ export const CommentOverlay: React.FC<CommentOverlayProps> = ({
         
         <div className="flex flex-col gap-4  bg-white">
           {comments.map((comment) => (
-            <CommentItem 
+            <CommentItem
               key={`${comment.id}-${comment.created_at}`}
-              {...comment} 
+              id={comment.id}
+              content={comment.content}
+              fieldIId={comment.fieldId}
+              createdAt={comment.createdAt}
+              image_url={comment.image_url}
+              user={comment.user}
+              user_id={comment.user?.id}  
               onCommentDeleted={(id) => setComments(prev => prev.filter(c => c.id !== id))}
             />
           ))}
