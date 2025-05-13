@@ -47,7 +47,7 @@ function FieldDetails() {
           <div className="flex-shrink-0 w-[30%] max-md:w-full max-md:mb-4">
             <FieldInfo />
           </div>
-          <div className="flex-grow w-full h-[80vh]">
+          <div className="flex-grow w-full h-[73vh]">
             <FieldPictureGallery images={fieldImages} />
           </div>
         </div>
