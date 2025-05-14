@@ -88,13 +88,18 @@ const FieldInfo: React.FC = () => {
               navigate(`/admin/manage/updateField/${selectedField.id}`)
             }
             text="Chỉnh sửa sân"
-            variant="primary"
+            type="primary"
           />
           <Button
-            onClick={() => navigate("/admin/statistic")}
-            text="Xem thống kê"
-            variant="secondary"
+            onClick={() => setShowComments(true)}
+            text="Bình luận"
+            type="tertiary"
           />
+          <CommentOverlay
+        isOpen={showComments}
+        onClose={() => setShowComments(false)}
+        fieldInfo={selectedField}
+      />
         </div>
       </div>
     );

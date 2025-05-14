@@ -1,6 +1,7 @@
+import React, { HTMLInputTypeAttribute } from "react";
 interface InputFieldProps {
   label: string;
-  type: string | number;
+  type:  HTMLInputTypeAttribute;
   placeholder: string;
   value: string;
   name?: string;
@@ -8,7 +9,7 @@ interface InputFieldProps {
   disabled?: boolean;
   style?: React.CSSProperties;
   customClass?: string; 
-  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   options?: { value: string; label: string }[]; // Thêm thuộc tính options
 }
 

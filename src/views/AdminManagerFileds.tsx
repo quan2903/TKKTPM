@@ -120,10 +120,16 @@ const ManageFields: React.FC = () => {
                         ? "bg-amber-400"
                         : field.state.name === "Suspended"
                           ? "bg-red-600"
-                          : field.state.name === "Deactivated"
-                            ? "bg-gray-400"
-                           
+                          : field.state.name === "Đang đặt lịch"
+                            ? "bg-blue-400"
+                            : field.state.name === "Deactivated"
+                              ? "bg-gray-400"
                               : "bg-gray-500"
+                        : field.state.name === "Deactivated"
+                          ? "bg-red-600"
+                          : field.state.name === "Suspended"
+                            ? "bg-gray-400"
+                            : "bg-gray-500"
                   }`}
                 ></span>
               </p>

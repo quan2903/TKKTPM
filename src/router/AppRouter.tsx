@@ -13,13 +13,16 @@ import ProfileInput from "../components/Profile/ProfileInput";
 import PaymentSuccessPage from "../views/paymentsuccess";
 import { GoogleCallback } from "../components/Auth/GoogleCallBack";
 import AdminLayout from "../views/AdminLayout";
-import AdminDashboard from "../views/AdminDashboard";
-import Statistics from "../views/AdminStatistic";
+import AdminDashboard from "../components/Admin/AdminDashboard";
+import AdminStatistics from "../components/Admin/AdminStatistic";
+import AdminManageFields from "../components/Admin/AdminManageFields";
 import FieldList from "../views/AdminFiledList";
-import ManageFields from "../views/AdminManagerFileds";
 import { Form } from "../views/FieldForm";
-import { ProtectedRoute } from "./ProtectedRouter"; // thêm dòng này
+import { ProtectedRoute } from "./ProtectedRouter"; 
 import UpdateField from "../components/Admin/updateField";
+import AdminManageUser from "../components/Admin/AdminManageUser";
+import RevenueField from "../components/Admin/RevenueField";
+import TopUsers from "../components/Admin/TopUsers";
 export const AppRouter: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
@@ -63,7 +66,7 @@ export const AppRouter: React.FC = () => {
         path="/admin/manage"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><ManageFields /></AdminLayout>
+            <AdminLayout><AdminManageFields /></AdminLayout>
           </ProtectedRoute>
         }
       />
@@ -76,10 +79,36 @@ export const AppRouter: React.FC = () => {
         }
       />
       <Route
+        path="/admin/manageUser"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminLayout><AdminManageUser /></AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/statistic"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><Statistics /></AdminLayout>
+            <AdminLayout><AdminStatistics /></AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/statistic/revenue"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminLayout><RevenueField /></AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/statistic/top-user"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminLayout><TopUsers /></AdminLayout>
           </ProtectedRoute>
         }
       />
