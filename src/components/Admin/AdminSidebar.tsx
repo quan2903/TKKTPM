@@ -8,6 +8,7 @@ import {
   ManageAccounts,
 
 } from "@mui/icons-material";
+import { Mail } from "lucide-react";
 import { useNavigate, useLocation, matchPath } from "react-router-dom";
 import { AvatarMenu } from "../Profile/Avatar";
 import { useState, useEffect } from "react";
@@ -75,7 +76,8 @@ const AdminSidebar = () => {
               location.pathname === "/admin/manage" ||
               location.pathname === "/admin/manage/FieldInfo" ||
               location.pathname === "/admin/manage/addField" ||
-              matchPath("/admin/manage/updateField/:fieldId", location.pathname)
+              matchPath("/admin/manage/updateField/:fieldId", location.pathname) || 
+              matchPath("/admin/manage/timetableField/:fieldId", location.pathname)
                 ? "text-orange-500"
                 : ""
             }`}
@@ -119,6 +121,7 @@ const AdminSidebar = () => {
           >
             <BarChart className="mr-2" /> Thống kê
           </li>
+           
           <li
             className="flex items-center py-3 px-2 cursor-pointer hover:text-orange-500 active:text-orange-500"
             onClick={() => navigate("/admin/help")}

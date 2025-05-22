@@ -2,13 +2,13 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:8000/api",
-  timeout: 10000,
+  timeout: 20000,
 });
 
 let isRefreshing = false;
 let failedQueue: { resolve: Function; reject: Function }[] = [];
 
-const openRoutes = ["/", "/login", "/register", "/dashboard/vnpay-return", "/dashboard", "/dashboard/fieldinfo"];
+const openRoutes = ["/", "/login", "/register", "/dashboard/vnpay-return", "/dashboard/fieldinfo"];
 
 // Request Interceptor
 axiosInstance.interceptors.request.use(
@@ -27,11 +27,11 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    console.log("🔃 Request:", config);
+
     return config;
   },
   (error) => {
-    console.error("❌ Request Error:", error);
+
     return Promise.reject(error);
   }
 );
@@ -43,14 +43,14 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
     const currentPath = window.location.pathname;
     const isOpenRoute = openRoutes.includes(currentPath);
-
+    
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url.includes("/auth/refresh") &&
       !isOpenRoute
     ) {
-      console.warn("⚠️ Token hết hạn. Đang thử refresh...");
+    
 
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
