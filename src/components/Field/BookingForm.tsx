@@ -5,7 +5,6 @@ import { fetchFields, createBooking, prepareBookingData, getMinBookingDate, vali
 import Button from "../Shared_components/Button";
 import { InputField } from "../Shared_components/InputField";
 import FieldTable from "../Shared_components/Timetable";
-import { useUser } from "../../hooks/useUser";
 import { useToast } from "../../hooks/use-toast";
 
 import type { Field, TimeSlot, BookingFormData } from "../../types/Booking";
@@ -14,17 +13,16 @@ const timeSlots: TimeSlot[] = [
   { value: "6-8", label: "06:00 - 08:00", startHour: 6, endHour: 8 },
   { value: "8-10", label: "08:00 - 10:00", startHour: 8, endHour: 10 },
   { value: "10-12", label: "10:00 - 12:00", startHour: 10, endHour: 12 },
+  {value: "12-14", label: "12:00 - 14:00", startHour: 12, endHour: 14 },
   { value: "14-16", label: "14:00 - 16:00", startHour: 14, endHour: 16 },
   { value: "16-18", label: "16:00 - 18:00", startHour: 16, endHour: 18 },
   { value: "18-20", label: "18:00 - 20:00", startHour: 18, endHour: 20 },
   { value: "20-22", label: "20:00 - 22:00", startHour: 20, endHour: 22 },
-  { value: "22-24", label: "22:00 - 24:00", startHour: 22, endHour: 24 },
 ];
 
 export const BookingForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useUser();
   const { toast } = useToast();
 
   const [fields, setFields] = useState<Field[]>([]);
@@ -133,6 +131,7 @@ export const BookingForm = () => {
       const res = await createBooking(bookingData);
       toast({
         title: "Đặt sân thành công!",
+        variant: "success",
         description: "Đang chuyển đến trang thanh toán...",
       });
       if (res.data?.receipt?.payment_url) {
@@ -237,7 +236,7 @@ export const BookingForm = () => {
                   <br />
                   Giá cọc (30% trên tổng 2 tiếng):{" "}
                   <span className="font-semibold text-amber-700">
-                    {(selectedPrice * 2 * 0.3).toLocaleString("vi-VN")} đ
+                    {(selectedPrice  * 0.3).toLocaleString("vi-VN")} đ
                   </span>
                 </div>
               )}

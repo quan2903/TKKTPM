@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { act, useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
 import { format, addDays, startOfWeek } from "date-fns";
 import { fetchWeeklyBookings } from "../../actions/bookingActions";
@@ -8,11 +8,12 @@ const timeSlots: TimeSlot[] = [
   { value: "6-8", label: "06:00 - 08:00", startHour: 6, endHour: 8 },
   { value: "8-10", label: "08:00 - 10:00", startHour: 8, endHour: 10 },
   { value: "10-12", label: "10:00 - 12:00", startHour: 10, endHour: 12 },
+  { value: "12-14", label: "12:00 - 14:00", startHour: 12, endHour: 14 },
   { value: "14-16", label: "14:00 - 16:00", startHour: 14, endHour: 16 },
   { value: "16-18", label: "16:00 - 18:00", startHour: 16, endHour: 18 },
   { value: "18-20", label: "18:00 - 20:00", startHour: 18, endHour: 20 },
   { value: "20-22", label: "20:00 - 22:00", startHour: 20, endHour: 22 },
-  { value: "22-24", label: "22:00 - 24:00", startHour: 22, endHour: 24 },
+
 ];
 
 interface SlotInfo {
@@ -44,7 +45,7 @@ export default function FieldTable({ startDate, fieldId, onSelect }: Props) {
     return Array.from({ length: 7 }, (_, i) => {
       const date = addDays(weekStart, i);
       return {
-        label: `T${i + 2} - ${format(date, "dd/MM")}`,
+        label: `${i === 6 ? "CN" : `T${i + 2}`} - ${format(date, "dd/MM")}`,
         date: format(date, "yyyy-MM-dd"),
       };
     });
@@ -100,7 +101,7 @@ export default function FieldTable({ startDate, fieldId, onSelect }: Props) {
     if (clickTimeout) {
       clearTimeout(clickTimeout);
       clickTimeout = null;
-      return; // double click
+      return; 
     }
 
     clickTimeout = setTimeout(() => {
@@ -156,9 +157,9 @@ export default function FieldTable({ startDate, fieldId, onSelect }: Props) {
                       "border p-2 text-center cursor-pointer transition-colors text-sm",
                       bgColor,
                       {
-                        "hover:bg-amber-100": !booked && !selectedNow && !isPast,
-        "bg-green-400 text-black": selectedNow,
-        "bg-white text-black": !booked && !isPast && !selectedNow,
+                        "hover:bg-amber-100": !booked && !selectedNow && !isPast && status === "active",
+                        "bg-green-400 text-black": selectedNow,
+                        
                       }
                     )}
                     onClick={() => handleCellClick(day.date, value, startHour)}

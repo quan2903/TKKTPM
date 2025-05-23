@@ -1,19 +1,39 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { FieldsTable } from "../Field/FieldTable";
 import { SearchBar } from "../Shared_components/SearchBar";
 import { ConfirmModal } from "../Shared_components/ConfirmModal";
 
 const BookHistoryForm: React.FC = () => {
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [allRows, setAllRows] = useState<any[]>([]);
   const [filteredRows, setFilteredRows] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+
+  const paginatedRows = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredRows.slice(start, start + itemsPerPage);
+  }, [filteredRows, currentPage]);
 
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+  const toISODateTime = (datetimeStr: string) => datetimeStr.replace(" ", "T");
 
   const fetchBookings = async () => {
     try {
@@ -21,17 +41,24 @@ const BookHistoryForm: React.FC = () => {
       const bookings = res.data.data.map((booking: any) => {
         const isPaid = booking.receipt?.status === "paid";
 
+        const isoStart = toISODateTime(booking.date_start);
+        const isoEnd = toISODateTime(booking.date_end);
+
+        const dateStart = new Date(isoStart);
+        const dateEnd = new Date(isoEnd);
+
         return {
           id: booking.id,
           name: booking.field.name,
-          rawDate: booking.date_start,
-          date: formatDate(booking.date_start),
-          price: booking.receipt.total_price ,
+          rawDate: isoStart,
+          date: formatDate(isoStart),
+          timeRange: `${formatTime(dateStart)} - ${formatTime(dateEnd)}`,
+          price: booking.receipt.total_price,
           status: isPaid ? "Đã thanh toán cọc" : "Chưa thanh toán cọc",
           receiptUrl: isPaid ? null : booking.receipt?.payment_url,
-        
         };
       });
+
       setAllRows(bookings);
       setFilteredRows(bookings);
     } catch (err) {
@@ -68,23 +95,117 @@ const BookHistoryForm: React.FC = () => {
     }
   };
 
+  const toEndOfDay = (dateStr: string) => {
+    const date = new Date(dateStr);
+    date.setHours(23, 59, 59, 999);
+    return date;
+  };
+
   const handleSearch = () => {
     const keyword = search.trim().toLowerCase();
-    const result = allRows.filter((r) =>
-      r.name.toLowerCase().includes(keyword)
-    );
+
+    const result = allRows.filter((r) => {
+      const matchKeyword = r.name.toLowerCase().includes(keyword);
+
+      const bookingDate = new Date(r.rawDate);
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? toEndOfDay(endDate) : null;
+
+      const matchStart = start ? bookingDate >= start : true;
+      const matchEnd = end ? bookingDate <= end : true;
+
+      return matchKeyword && matchStart && matchEnd;
+    });
+
     setFilteredRows(result);
+    setCurrentPage(1);
   };
 
   return (
-    <div className="p-5 space-y-4">
-      <SearchBar
-        searchQuery={search}
-        onInputChange={setSearch}
-        onSearch={handleSearch}
-      />
+    <div className="p-5 space-y-6">
+      <div className="flex flex-nowrap gap-6 items-center">
+        <div className="flex-[0_0_53%] min-w-[280px] h-[70px]">
+          <SearchBar
+            searchQuery={search}
+            onInputChange={setSearch}
+            onSearch={handleSearch}
+          />
+        </div>
 
-      <FieldsTable rows={filteredRows} onCancel={handleCancel} />
+        <div className="flex-[0_0_45%] min-w-[280px] h-[60px] flex items-center gap-4">
+          <div className="flex items-center space-x-2 min-w-[120px] h-full">
+            <label className="text-sm whitespace-nowrap">Từ ngày:</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                const newStart = e.target.value;
+                setStartDate(newStart);
+                if (endDate && new Date(endDate) < new Date(newStart)) {
+                  setEndDate("");
+                }
+              }}
+              className="border rounded-[10px] px-3 py-2 text-sm h-4/5"
+              max={endDate || undefined}
+              style={{ minWidth: 0 }}
+            />
+          </div>
+
+          <div className="flex items-center space-x-2 min-w-[120px] h-4/5">
+            <label className="text-sm whitespace-nowrap">Đến ngày:</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border rounded-[10px] px-3 py-2 text-sm h-full"
+              min={startDate || undefined}
+              style={{ minWidth: 0 }}
+            />
+          </div>
+
+          <button
+            onClick={handleSearch}
+            className="px-6 py-2 bg-blue-600 text-white rounded-[10px] hover:bg-blue-700 text-sm h-4/5"
+            style={{ minWidth: 80 }}
+          >
+            Lọc
+          </button>
+        </div>
+      </div>
+
+      <FieldsTable rows={paginatedRows} onCancel={handleCancel} />
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Trước
+          </button>
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 hover:bg-gray-200"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Sau
+          </button>
+        </div>
+      )}
 
       <ConfirmModal
         visible={showConfirm}
