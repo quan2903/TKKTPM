@@ -94,22 +94,7 @@ const AdminSidebar = () => {
             </a>
           </li>
           
-          <li
-            className={`flex items-center py-3 px-2 cursor-pointer hover:text-orange-500 active:text-orange-500 ${
-              location.pathname === "/admin/manageUser" ? "text-orange-500" : ""
-            }`}
-          >
-            <a
-              href="/admin/manageUser"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/admin/manageUser");
-              }}
-              className="flex items-center w-full"
-            >
-              <ManageAccounts className="mr-2" /> Quản lý người dùng 
-            </a>
-          </li>
+
 
           <li
             className={`flex items-center py-3 px-2 cursor-pointer hover:text-orange-500 active:text-orange-500 ${
