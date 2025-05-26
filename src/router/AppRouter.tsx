@@ -147,16 +147,7 @@ const AppRouter: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/admin/manageUser"
-        element={
-          <ProtectedRoute adminOnly>
-            <AdminLayout>
-              <AdminManageUser />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
+
       <Route
         path="/admin/statistic"
         element={

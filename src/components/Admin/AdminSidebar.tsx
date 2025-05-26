@@ -6,12 +6,13 @@ import {
   Help,
   Settings,
   ManageAccounts,
-
+  BookmarkAdded
 } from "@mui/icons-material";
 import { Mail } from "lucide-react";
 import { useNavigate, useLocation, matchPath } from "react-router-dom";
 import { AvatarMenu } from "../Profile/Avatar";
 import { useState, useEffect } from "react";
+// import { match } from "react-router-dom";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
@@ -77,7 +78,8 @@ const AdminSidebar = () => {
               location.pathname === "/admin/manage/FieldInfo" ||
               location.pathname === "/admin/manage/addField" ||
               matchPath("/admin/manage/updateField/:fieldId", location.pathname) || 
-              matchPath("/admin/manage/timetableField/:fieldId", location.pathname)
+              matchPath("/admin/manage/FieldInfo/timetable/:fieldId", location.pathname)||
+              matchPath("/admin/manage/FieldInfo/:fieldId", location.pathname)
                 ? "text-orange-500"
                 : ""
             }`}
@@ -93,32 +95,53 @@ const AdminSidebar = () => {
               <ManageSearch className="mr-2" /> Quản lý thông tin sân
             </a>
           </li>
-          
-
+          <li
+            className={`flex items-center py-3 px-2 cursor-pointer hover:text-orange-500 active:text-orange-500 ${
+              location.pathname === "/admin/manageBooking" || 
+              matchPath("admin/statistic/revenue/:fieldId", location.pathname) 
+              ? "text-orange-500" : ""
+            }`}
+          >
+            <a
+              href="/admin/manageBooking"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/admin/manageBooking");
+              }}
+              className="flex items-center w-full"
+            >
+              <BookmarkAdded className="mr-2" /> Quản lý đặt sân
+            </a>
+          </li>
+          {/* <li
+            className={`flex items-center py-3 px-2 cursor-pointer hover:text-orange-500 active:text-orange-500 ${
+              location.pathname === "/admin/manageUser" ? "text-orange-500" : ""
+            }`}
+          >
+            <a
+              href="/admin/manageUser"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/admin/manageUser");
+              }}
+              className="flex items-center w-full"
+            >
+              <ManageAccounts className="mr-2" /> Quản lý người dùng 
+            </a>
+          </li> */}
 
           <li
             className={`flex items-center py-3 px-2 cursor-pointer hover:text-orange-500 active:text-orange-500 ${
               location.pathname === "/admin/statistic" || 
-              location.pathname ==="/admin/statistic/revenue" 
+              location.pathname ==="/admin/statistic/revenue" ||
+              location.pathname === "/admin/statistic/top-user"
               ? "text-orange-500" : ""
             }`}
             onClick={() => navigate("/admin/statistic")}
           >
             <BarChart className="mr-2" /> Thống kê
           </li>
-           
-          <li
-            className="flex items-center py-3 px-2 cursor-pointer hover:text-orange-500 active:text-orange-500"
-            onClick={() => navigate("/admin/help")}
-          >
-            <Help className="mr-2" /> Trợ giúp
-          </li>
-          <li
-            className="flex items-center py-3 px-2 cursor-pointer hover:text-orange-500 active:text-orange-500"
-            onClick={() => navigate("/admin/settings")}
-          >
-            <Settings className="mr-2" /> Cài đặt
-          </li>
+
         </ul>
       </nav>
     </div>
