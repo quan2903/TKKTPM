@@ -35,37 +35,6 @@ const BookHistoryForm: React.FC = () => {
 
   const toISODateTime = (datetimeStr: string) => datetimeStr.replace(" ", "T");
 
-  const fetchBookings = async () => {
-    try {
-      const res = await axiosInstance.get("/bookings/user");
-      const bookings = res.data.data.map((booking: any) => {
-        const isPaid = booking.receipt?.status === "paid";
-
-        const isoStart = toISODateTime(booking.date_start);
-        const isoEnd = toISODateTime(booking.date_end);
-
-        const dateStart = new Date(isoStart);
-        const dateEnd = new Date(isoEnd);
-
-        return {
-          id: booking.id,
-          name: booking.field.name,
-          rawDate: isoStart,
-          date: formatDate(isoStart),
-          timeRange: `${formatTime(dateStart)} - ${formatTime(dateEnd)}`,
-          price: booking.receipt.total_price,
-          status: isPaid ? "Đã thanh toán cọc" : "Chưa thanh toán cọc",
-          receiptUrl: isPaid ? null : booking.receipt?.payment_url,
-        };
-      });
-
-      setAllRows(bookings);
-      setFilteredRows(bookings);
-    } catch (err) {
-      console.error("Lỗi khi tải lịch sử đặt sân:", err);
-    }
-  };
-
   const formatDate = (datetimeString: string) => {
     const date = new Date(datetimeString);
     return date.toLocaleDateString("vi-VN", {
@@ -75,23 +44,48 @@ const BookHistoryForm: React.FC = () => {
     });
   };
 
-  const handleCancel = (id: string) => {
-    setSelectedId(id);
-    setShowConfirm(true);
+  const getDisplayStatus = (booking: any) => {
+    const receiptStatus = booking.receipt?.status;
+    const isFullyPaid = booking.receipt?.is_fully_paid === 1;
+    const bookingStatus = booking.booking_status;
+
+    if (bookingStatus === "cancelled_by_user") return "Đã hủy";
+    if (receiptStatus === "cancelled") return "Đã hủy";
+    if (receiptStatus === "expired") return "Đã hết hạn";
+    if (receiptStatus === "paid") return isFullyPaid ? "Đã thanh toán toàn bộ" : "Đã thanh toán cọc";
+    if (receiptStatus === "pending") return "Chờ thanh toán";
+    return "Không xác định";
   };
 
-  const confirmCancel = async () => {
-    if (!selectedId) return;
+  const fetchBookings = async () => {
     try {
-      await axiosInstance.delete(`/bookings/${selectedId}`);
-      const updated = allRows.filter((r) => r.id !== selectedId);
-      setAllRows(updated);
-      setFilteredRows(updated);
+      const res = await axiosInstance.get("/bookings/user");
+      const bookings = res.data.data.map((booking: any) => {
+        const isoStart = toISODateTime(booking.date_start);
+        const isoEnd = toISODateTime(booking.date_end);
+        const dateStart = new Date(isoStart);
+        const dateEnd = new Date(isoEnd);
+
+        const displayStatus = getDisplayStatus(booking);
+
+        return {
+          id: booking.id,
+          name: booking.field.name,
+          rawDate: isoStart,
+          date: formatDate(isoStart),
+          timeRange: `${formatTime(dateStart)} - ${formatTime(dateEnd)}`,
+          price: booking.receipt.total_price,
+          deposit_price: booking.receipt.deposit_price,
+          displayStatus,
+          receiptUrl: displayStatus === "Chờ thanh toán" ? booking.receipt?.payment_url : null,
+          booking_status: booking.booking_status,
+        };
+      });
+
+      setAllRows(bookings);
+      setFilteredRows(bookings);
     } catch (err) {
-      console.error("Lỗi khi hủy đặt sân:", err);
-    } finally {
-      setShowConfirm(false);
-      setSelectedId(null);
+      console.error("Lỗi khi tải lịch sử đặt sân:", err);
     }
   };
 
@@ -119,6 +113,26 @@ const BookHistoryForm: React.FC = () => {
 
     setFilteredRows(result);
     setCurrentPage(1);
+  };
+
+  const handleCancel = (id: string) => {
+    setSelectedId(id);
+    setShowConfirm(true);
+  };
+
+  const confirmCancel = async () => {
+    if (!selectedId) return;
+    try {
+      await axiosInstance.delete(`/bookings/${selectedId}`);
+      const updated = allRows.filter((r) => r.id !== selectedId);
+      setAllRows(updated);
+      setFilteredRows(updated);
+    } catch (err) {
+      console.error("Lỗi khi hủy đặt sân:", err);
+    } finally {
+      setShowConfirm(false);
+      setSelectedId(null);
+    }
   };
 
   return (

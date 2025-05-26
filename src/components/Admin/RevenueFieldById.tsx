@@ -19,7 +19,7 @@ import {
 } from "../ui/select";
 import { fetchRevenueReport } from "../../api/revenueApi";
 import { toast } from "../../hooks/use-toast";
-
+import { vi } from "date-fns/locale";
 // Định dạng tiền tệ
 const formatCurrency = (amount: number): string =>
   new Intl.NumberFormat("vi-VN", {
@@ -32,6 +32,7 @@ const timeSlots = [
   { value: "06:00:00-08:00:00", label: "6:00 - 8:00" },
   { value: "08:00:00-10:00:00", label: "08:00 - 10:00" },
   { value: "10:00:00-12:00:00", label: "10:00 - 12:00" },
+  { value: "12:00:00-14:00:00", label: "12:00 - 14:00" },
   { value: "14:00:00-16:00:00", label: "14:00 - 16:00" },
   { value: "16:00:00-18:00:00", label: "16:00 - 18:00" },
   { value: "18:00:00-20:00:00", label: "18:00 - 20:00" },
@@ -40,6 +41,7 @@ const timeSlots = [
 
 interface Booking {
   id: string;
+  booking_status: string;
   user: {
     id: string;
     name: string;
@@ -86,7 +88,6 @@ const RevenueFieldById = () => {
   const [hasFilters, setHasFilters] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [pendingReceiptId, setPendingReceiptId] = useState<string | null>(null);
-  const [hasStartDate, setHasStartDate] = useState(false);
   const [fieldName, setFieldName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
@@ -128,72 +129,32 @@ const RevenueFieldById = () => {
   const applyFilters = async () => {
     if (!id) return;
 
-    // Kiểm tra ngày kết thúc không được trước ngày bắt đầu
-    if (startDate && endDate && startDate > endDate) {
-      toast({
-        title: "Lỗi",
-        description: "Ngày kết thúc không thể trước ngày bắt đầu",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
     setError(null);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when applying new filters
 
     try {
       const params: any = {
         field_id: id,
       };
 
-      if (
-        startDate &&
-        endDate &&
-        selectedTimeSlot &&
-        startDate.getTime() === endDate.getTime()
-      ) {
+      if (startDate) {
+        params.start_date = format(startDate, "yyyy-MM-dd");
+      }
+      if (endDate) {
+        params.end_date = format(endDate, "yyyy-MM-dd");
+      }
+      if (selectedTimeSlot) {
         const [startTime, endTime] = selectedTimeSlot.split("-");
-        const dateStr = format(startDate, "yyyy-MM-dd");
-        params.start_date = `${dateStr}T${startTime}`;
-        params.end_date = `${dateStr}T${endTime}`;
         params.start_time = startTime;
         params.end_time = endTime;
-      } else {
-        if (startDate) {
-          const start = new Date(startDate);
-          if (selectedTimeSlot) {
-            const [startTime] = selectedTimeSlot.split("-");
-            const [hours, minutes, seconds] = startTime.split(":").map(Number);
-            start.setHours(hours, minutes, seconds, 0);
-          } else {
-            start.setHours(0, 0, 0, 0);
-          }
-          params.start_date = start.toISOString();
-        }
-        if (endDate) {
-          const end = new Date(endDate);
-          if (selectedTimeSlot) {
-            const [, endTime] = selectedTimeSlot.split("-");
-            const [hours, minutes, seconds] = endTime.split(":").map(Number);
-            end.setHours(hours, minutes, seconds, 999);
-          } else {
-            end.setHours(23, 59, 59, 999);
-          }
-          params.end_date = end.toISOString();
-        }
-        if (selectedTimeSlot) {
-          const [startTime, endTime] = selectedTimeSlot.split("-");
-          params.start_time = startTime;
-          params.end_time = endTime;
-        }
       }
+
       const data = await fetchRevenueReport(params);
       setReportData(data);
       setHasFilters(!!startDate || !!endDate || !!selectedTimeSlot);
     } catch (err) {
       setError("Không thể tải dữ liệu doanh thu");
-      console.error("Lỗi khi tải dữ liệu:", err);
     } finally {
       setLoading(false);
     }
@@ -334,14 +295,9 @@ const RevenueFieldById = () => {
               <Calendar
                 mode="single"
                 selected={startDate || undefined}
-                onSelect={(date) => {
-                  setStartDate(date ?? null);
-                  setHasStartDate(!!date);
-                  if (date && endDate && date > endDate) {
-                    setEndDate(null); // Reset end date if it's before start date
-                  }
-                }}
-                autoFocus
+                onSelect={(date) => setStartDate(date ?? null)}
+                initialFocus
+                locale={vi}
               />
             </PopoverContent>
           </Popover>
@@ -357,27 +313,25 @@ const RevenueFieldById = () => {
                   "w-[180px] justify-start text-left font-normal",
                   !endDate && "text-muted-foreground",
                 )}
-                disabled={!hasStartDate} // Disable khi chưa có start date
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {endDate ? (
                   format(endDate, "dd/MM/yyyy")
                 ) : (
-                  <span>{hasStartDate ? "Chọn ngày" : "Chọn ngày "}</span>
+                  <span>Chọn ngày</span>
                 )}
               </Button>
             </PopoverTrigger>
-            {hasStartDate && (
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate || undefined}
-                  onSelect={(date) => setEndDate(date ?? null)}
-                  autoFocus
-                  fromDate={startDate || undefined} //
-                />
-              </PopoverContent>
-            )}
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={endDate || undefined}
+                onSelect={(date) => setEndDate(date ?? null)}
+                initialFocus
+                fromDate={startDate || undefined}
+                locale={vi}
+              />
+            </PopoverContent>
           </Popover>
         </div>
 
@@ -430,98 +384,99 @@ const RevenueFieldById = () => {
 
           {reportData.bookings && reportData.bookings.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full bg-white rounded-lg shadow border border-gray-200">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pl-12 py-3 text-left text-xs font-bold text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
                       Người đặt
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pl-5 py-3 text-left text-xs font-bold text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
                       Ngày đặt
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pl-5 py-3 text-left text-xs font-bold text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
                       Khung giờ
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Giá sân
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
                       Tiền cọc
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pl-6 py-3 text-left text-xs font-bold text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
                       Tổng thanh toán
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="pl-11 py-3 text-left text-xs font-bold text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
                       Trạng thái
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
                       Xác nhận
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {currentBookings.map((booking) => (
-                    <tr key={booking.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                    <tr
+                      key={booking.id}
+                      className="hover:bg-blue-50 transition-colors border-b border-gray-100 text-base"
+                    >
+                      <td className="pl-12 py-4 whitespace-nowrap align-middle">
+                        <div className="font-medium text-gray-900">
                           {booking.user.name}
                         </div>
                         <div className="text-xs text-gray-500">
                           {booking.user.email}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {format(new Date(booking.date_start), "dd/MM/yyyy")}
-                        </div>
+                      <td className="pl-5 py-4 whitespace-nowrap text-gray-800 align-middle">
+                        {format(new Date(booking.date_start), "dd/MM/yyyy")}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {format(new Date(booking.date_start), "HH:mm")} -{" "}
-                          {format(new Date(booking.date_end), "HH:mm")}
-                        </div>
+                      <td className="pl-5 py-4 whitespace-nowrap text-gray-800 align-middle">
+                        {format(new Date(booking.date_start), "HH:mm")} -{" "}
+                        {format(new Date(booking.date_end), "HH:mm")}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatCurrency(booking.field.price)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 py-4 whitespace-nowrap text-gray-700 align-middle">
                         {formatCurrency(booking.receipt.deposit_price)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                      <td className="pl-6 py-4 whitespace-nowrap font-semibold text-green-700 align-middle">
                         {formatCurrency(booking.receipt.total_price)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${
-                              booking.receipt.is_fully_paid === 1
-                                ? "bg-green-100 text-green-800"
-                                : "bg-blue-100 text-blue-800"
-                            }`}
-                        >
-                          {booking.receipt.is_fully_paid === 1
-                            ? "Đã thanh toán toàn bộ"
-                            : "Đã thanh toán cọc"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {booking.receipt.is_fully_paid === 0 && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleConfirmPayment(booking.receipt.id)
-                            }
+                      <td className="pl-11 py-4 whitespace-nowrap align-middle">
+                        {booking.booking_status === "cancelled_by_user" ? (
+                          <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-700">
+                            Đã huỷ
+                          </span>
+                        ) : (
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                ${
+                  booking.receipt.is_fully_paid === 1
+                    ? "bg-green-100 text-green-800"
+                    : "bg-blue-100 text-blue-800"
+                }`}
                           >
-                            Xác nhận
-                          </Button>
+                            {booking.receipt.is_fully_paid === 1
+                              ? "Đã thanh toán toàn bộ"
+                              : "Đã thanh toán cọc"}
+                          </span>
                         )}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap align-middle">
+                        {booking.booking_status !== "cancelled_by_user" &&
+                          booking.receipt.is_fully_paid === 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleConfirmPayment(booking.receipt.id)
+                              }
+                            >
+                              Xác nhận
+                            </Button>
+                          )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
+              {/* Pagination giữ nguyên */}
               <div className="flex items-center justify-center gap-3 px-6 py-4 border-t">
                 <Button
                   variant="outline"
@@ -533,7 +488,6 @@ const RevenueFieldById = () => {
                 >
                   Trước
                 </Button>
-
                 <div className="flex items-center space-x-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                     (page) => (
@@ -551,7 +505,6 @@ const RevenueFieldById = () => {
                     ),
                   )}
                 </div>
-
                 <Button
                   variant="outline"
                   size="sm"

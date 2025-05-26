@@ -16,49 +16,114 @@ import AdminLayout from "../views/AdminLayout";
 import AdminDashboard from "../components/Admin/AdminDashboard";
 import AdminStatistics from "../components/Admin/AdminStatistic";
 import AdminManageFields from "../components/Admin/AdminManageFields";
-import FieldList from "../views/AdminFiledList";
+
 import { Form } from "../views/FieldForm";
-import { ProtectedRoute } from "./ProtectedRouter"; 
-import UpdateField from "../components/Admin/updateField";
+import ProtectedRoute from "./ProtectedRouter";
+import UpdateField from "../components/Admin/AdminComponent/updateField";
 import AdminManageUser from "../components/Admin/AdminManageUser";
 import RevenueField from "../components/Admin/RevenueField";
 import TopUsers from "../components/Admin/TopUsers";
-export const AppRouter: React.FC = () => {
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+import TimeTableField from "../components/Admin/AdminManageTimeTableField";
 
-  useEffect(() => {
-    const storedIsAdmin = localStorage.getItem("isAdmin");
-    setIsAdmin(storedIsAdmin === "true");
-  }, []);
+import { useAuth } from "../context/AuthContext";
+import RevenueFieldById from "../components/Admin/RevenueFieldById";
+import AdminManageBooking from "../components/Admin/AdminManageBooking";
+import UserProtectedRoute from "./UserProtectedRouter";
 
-  if (isAdmin === null) {
-    return <div>Loading...</div>; // Hoặc có thể trả về loading spinner
-  }
+const AppRouter: React.FC = () => {
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+
+  const isAdmin = user?.id === "admin_000";
 
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
+      {/* Nếu chưa đăng nhập */}
+      <Route
+        path="/login"
+        element={
+          !isAuthenticated ? (
+            <AuthLayout>
+              <Login />
+            </AuthLayout>
+          ) : isAdmin ? (
+            <Navigate to="/admin" replace />
+          ) : (
+            <Navigate to="/dashboard" replace />
+          )
+        }
+      />
       <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
       <Route path="/landingpage" element={<LandingPage />} />
-
-      {/* Dashboard Routes */}
-      <Route path="/dashboard" element={<DashboardLayout><FieldsSummary /></DashboardLayout>} />
-      <Route path="/dashboard/Booking" element={<DashboardLayout><Booking /></DashboardLayout>} />
-      <Route path="/dashboard/history" element={<DashboardLayout><BookHistory /></DashboardLayout>} />
-      <Route path="/dashboard/Profile" element={<DashboardLayout><ProfileInput /></DashboardLayout>} />
-      <Route path="/dashboard/vnpay-return" element={<DashboardLayout><PaymentSuccessPage /></DashboardLayout>} />
-      <Route path="/dashboard/FieldInfo" element={<DashboardLayout><FieldDetails /></DashboardLayout>} />
-
-      {/* Google Callback */}
       <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
-      {/* Admin Routes dùng ProtectedRoute */}
+      {/* Dashboard public */}
+      <Route
+        path="/dashboard"
+        element={
+          <DashboardLayout>
+            <FieldsSummary />
+          </DashboardLayout>
+        }
+      />
+      <Route
+        path="/dashboard/FieldInfo/:id"
+        element={
+          <DashboardLayout>
+            <FieldDetails />
+          </DashboardLayout>
+        }
+      />
+
+      {/* Dashboard user protected */}
+      <Route
+        path="/dashboard/Booking"
+        element={
+          <UserProtectedRoute>
+            <DashboardLayout>
+              <Booking />
+            </DashboardLayout>
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/history"
+        element={
+          <UserProtectedRoute>
+            <DashboardLayout>
+              <BookHistory />
+            </DashboardLayout>
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/Profile"
+        element={
+          <UserProtectedRoute>
+            <DashboardLayout>
+              <ProfileInput />
+            </DashboardLayout>
+          </UserProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/vnpay-return"
+        element={
+          <DashboardLayout>
+            <PaymentSuccessPage />
+          </DashboardLayout>
+        }
+      />
+
+      {/* Admin */}
       <Route
         path="/admin"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><AdminDashboard /></AdminLayout>
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
@@ -66,15 +131,19 @@ export const AppRouter: React.FC = () => {
         path="/admin/manage"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><AdminManageFields /></AdminLayout>
+            <AdminLayout>
+              <AdminManageFields />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/fileds"
+        path="/admin/manageBooking"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><FieldList /></AdminLayout>
+            <AdminLayout>
+              <AdminManageBooking />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
@@ -82,7 +151,9 @@ export const AppRouter: React.FC = () => {
         path="/admin/manageUser"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><AdminManageUser /></AdminLayout>
+            <AdminLayout>
+              <AdminManageUser />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
@@ -90,25 +161,39 @@ export const AppRouter: React.FC = () => {
         path="/admin/statistic"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><AdminStatistics /></AdminLayout>
+            <AdminLayout>
+              <AdminStatistics />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/admin/statistic/revenue"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><RevenueField /></AdminLayout>
+            <AdminLayout>
+              <RevenueField />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/admin/statistic/revenue/:id"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminLayout>
+              <RevenueFieldById />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/statistic/top-user"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><TopUsers /></AdminLayout>
+            <AdminLayout>
+              <TopUsers />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
@@ -116,50 +201,34 @@ export const AppRouter: React.FC = () => {
         path="/admin/manage/addField"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><Form /></AdminLayout>
+            <AdminLayout>
+              <Form />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/manage/FieldInfo"
+        path="/admin/manage/FieldInfo/:id"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout><FieldDetails /></AdminLayout>
+            <AdminLayout>
+              <FieldDetails />
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
-
-   
       <Route
-        path={isAdmin ? "/admin/manage/FieldInfo" : "/dashboard/FieldInfo"}
+        path="/admin/manage/FieldInfo/timetable/:id"
         element={
-          isAdmin ? (
+          <ProtectedRoute adminOnly>
             <AdminLayout>
-              <FieldDetails />
+              <TimeTableField />
             </AdminLayout>
-          ) : (
-            <DashboardLayout>
-              <FieldDetails />
-            </DashboardLayout>
-          )
-        }
-      />
-            <Route 
-        path={isAdmin ? "/admin/Profile" : "/dashboard/Profile"} 
-        element={
-          isAdmin ? (
-            <AdminLayout>
-              <ProfileInput />
-            </AdminLayout>
-          ) : (
-            <DashboardLayout>
-              <ProfileInput />
-            </DashboardLayout>
-          )
+          </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/manage/updateField/:fieldId" 
+        path="/admin/manage/updateField/:fieldId"
         element={
           <ProtectedRoute adminOnly>
             <AdminLayout>
@@ -169,11 +238,22 @@ export const AppRouter: React.FC = () => {
         }
       />
 
+      <Route
+        path="/admin/Profile"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminLayout>
+              <ProfileInput />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
 
-      {/* Redirect fallback */}
+      {/* Redirect mặc định */}
       <Route path="/" element={<Navigate to="/landingpage" replace />} />
       <Route path="*" element={<Navigate to="/landingpage" replace />} />
     </Routes>
   );
 };
-// export default AppRouter;
+
+export default AppRouter;

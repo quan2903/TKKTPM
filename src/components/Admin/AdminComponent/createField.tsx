@@ -255,7 +255,7 @@ const FieldForm: React.FC<FieldFormProps> = ({ onSubmit }) => {
         value={formData.description || ""}
         required
         name="description"
-        style={{ marginBottom: "1.5rem", height: "100px" }}
+        style={{ marginBottom: "1.5rem" }}
         onChange={handleInputChange}
       />
       <div className="mb-4 flex flex-col pl-[190px] ">
@@ -269,7 +269,7 @@ const FieldForm: React.FC<FieldFormProps> = ({ onSubmit }) => {
           {previews.map((preview, index) => (
             <div key={index} className="relative">
               <img
-                src={preview} // URL xem trước của ảnh mới
+                src={preview} 
                 alt="New"
                 className="w-20 h-20 object-cover rounded"
               />
