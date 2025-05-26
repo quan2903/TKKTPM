@@ -20,7 +20,7 @@ import AdminManageFields from "../components/Admin/AdminManageFields";
 import { Form } from "../views/FieldForm";
 import ProtectedRoute from "./ProtectedRouter";
 import UpdateField from "../components/Admin/AdminComponent/updateField";
-import AdminManageUser from "../components/Admin/AdminManageUser";
+
 import RevenueField from "../components/Admin/RevenueField";
 import TopUsers from "../components/Admin/TopUsers";
 import TimeTableField from "../components/Admin/AdminManageTimeTableField";
